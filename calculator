@@ -1,0 +1,92 @@
+import sys
+
+from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout
+from PyQt5.QtGui import QIcon
+
+
+class Exam_Widget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.result = 0
+        self.opcode = ''
+        self.first_input_flag = True
+        self.lbl_result = QLabel('0')
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(self.lbl_result)
+        vbox = QVBoxLayout()
+        vbox.addLayout(hbox)
+
+
+        grid = QGridLayout()
+        names = ['Cls', "Bck", ",", "Close",
+                 "7", '8', '9', '+',
+                 "4", '5', '6', '-',
+                 "1", '2', '3', '*',
+                 "0", ',', '=', '/']
+        positions = [(i, j) for i in range(5) for j in range(4)]
+
+        for position, name in zip(positions, names) :
+            if name == "" :
+                continue
+            button = QPushButton(name)
+            button.clicked.connect(self.buttonClicked)
+            grid.addWidget(button, *position)
+
+        vbox.addLayout(grid)
+        self.setLayout(vbox)
+        self.move(600,250)
+        self.setWindowTitle("Calculator")
+        self.setWindowIcon(QIcon('../../exam_Python/bigdata/image/calculator.png'))
+        self.show()
+
+    def buttonClicked(self):
+        sender = self.sender()
+        str_btn = sender.text()
+
+        if str_btn >= '0' and str_btn <= '9':
+            if self.first_input_flag:
+                self.first_input_flag = False
+                self.lbl_result.setText("")
+            self.lbl_result.setText(self.lbl_result.text() + str_btn)
+        else:
+            if str_btn =='Cls':
+                self.result =0
+                self.opcode =''
+                self.first_input_flag = True
+                self.lbl_result.setText('0')
+            else:
+                if(self.opcode == '' or self.opcode == '='):
+                    self.result = int(self.lbl_result.text())
+                else:
+                    if self.first_input_flag:
+                        self.opcode = str_btn
+                    else:
+                        self.calculator(self.lbl_result.text())
+                        self.lbl_result.setText(str(self.result))
+                self.opcode = str_btn
+                self.first_input_flag = True
+
+    def calculator(self, str_lbl):
+        if self.opcode == '+':
+            self.result = self.result + float(str_lbl)
+        elif self.opcode == '-':
+            self.result = self.result - float(str_lbl)
+        elif self.opcode == '*':
+            self.result = self.result * float(str_lbl)
+        elif self.opcode == '/':
+            if float(str_lbl) == 0:
+                self.result = 'infinity'
+            else :
+                self.result = self.result / float(str_lbl)
+        else: self.result = 0
+
+app = QApplication(sys.argv)
+w = Exam_Widget()
+w.show()
+sys.exit(app.exec_())   # 강제종료하기
